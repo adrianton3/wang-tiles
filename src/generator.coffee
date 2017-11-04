@@ -66,8 +66,8 @@ bf = (board, start) ->
 findHoles = (board) ->
 	holes = []
 
-	for i in [0...board.size.y]
-		for j in [0...board.size.x]
+	for i in [0...board.size.x]
+		for j in [0...board.size.y]
 			position = Vec2.make i, j
 			if not (board.get position)?
 				holes.push position

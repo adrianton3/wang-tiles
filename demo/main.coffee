@@ -1,10 +1,10 @@
 'use strict'
 
 
-draw = (board) ->
+draw = (board, tileSize) ->
 	canvas = document.getElementById 'can'
-	canvas.width = 32 * 7
-	canvas.height = 32 * 7
+	canvas.width = tileSize.x * board.size.x
+	canvas.height = tileSize.y * board.size.y
 
 	context = canvas.getContext '2d'
 
@@ -12,28 +12,37 @@ draw = (board) ->
 		for j in [0...board.size.x]
 			tile = board.get Vec2.make j, i
 			if tile?
-				context.drawImage tile.image, j * 32, i * 32
+				context.drawImage tile.image, j * tileSize.x, i * tileSize.y
 	return
 
 
-main = ->
+main = (src, srcSize, outSize) ->
 	image = new Image
-	image.src = '1.png'
+	image.src = src
 	image.addEventListener 'load', ->
 		canvas = document.createElement 'canvas'
-		canvas.width = 34 * 2
-		canvas.height = 36 * 2
+		canvas.width = image.width
+		canvas.height = image.height
 
 		context = canvas.getContext '2d'
 		context.drawImage image, 0, 0
 
-		Tileset.getTileset canvas, Vec2.make 2, 2
+		Tileset.getTileset canvas, srcSize
 			.then (tileset) ->
-				board = Generator.generate (Vec2.make 7, 7), tileset
-				draw board
+				tileSize = Object.assign {}, (tileset.get 't0-0').tileData.size
+				outSize ?= Vec2.make(
+					window.innerWidth // tileSize.x
+					window.innerHeight // tileSize.y
+				)
+
+				board = Generator.generate outSize, tileset
+				draw board, tileSize
 				return
 
 	return
 
 
-main()
+main(
+	'1.png'
+	Vec2.make 2, 2
+)
