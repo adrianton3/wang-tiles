@@ -174,9 +174,12 @@ tileDataToImage = ({ data, size }) ->
 	imageData = new ImageData (new Uint8ClampedArray data), size.x, size.y
 	context.putImageData imageData, 0, 0
 
-	image = new Image
-	image.src = canvas.toDataURL()
-	image
+	new Promise (resolve, reject) ->
+		image = new Image
+		image.src = canvas.toDataURL()
+		image.addEventListener 'load', ->
+			resolve image
+			return
 
 
 getTileset = (canvas, size) ->
@@ -192,11 +195,10 @@ getTileset = (canvas, size) ->
 		tile.neighbors = getNeighbors tilesBySignature, tile
 		return
 
-	tiles.forEach (tile) ->
-		tile.image = tileDataToImage tile.tileData
-		return
-
-	indexBy tiles, (tile) -> tile.id
+	Promise.all(
+		tiles.map (tile) ->
+			(tileDataToImage tile.tileData).then (image) -> tile.image = image
+	).then -> indexBy tiles, ({ id }) -> id
 
 
 window.Tileset ?= {}

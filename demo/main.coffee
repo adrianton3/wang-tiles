@@ -27,13 +27,12 @@ main = ->
 		context = canvas.getContext '2d'
 		context.drawImage image, 0, 0
 
-		tileset = Tileset.getTileset canvas, Vec2.make 2, 2
+		Tileset.getTileset canvas, Vec2.make 2, 2
+			.then (tileset) ->
+				board = Generator.generate (Vec2.make 7, 7), tileset
+				draw board
+				return
 
-		console.log tileset
-
-		board = Generator.generate (Vec2.make 7, 7), tileset
-
-		setTimeout (-> draw board), 1000
 	return
 
 
