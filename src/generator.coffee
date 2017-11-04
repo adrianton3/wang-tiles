@@ -42,7 +42,8 @@ getNeighbors = (board, position) ->
 
 
 bf = (board, start) ->
-	queue = [start]
+	queue = [start...]
+
 	tries = 0
 	triesMax = 1000
 
@@ -62,10 +63,43 @@ bf = (board, start) ->
 	return
 
 
+findHoles = (board) ->
+	holes = []
+
+	for i in [0...board.size.y]
+		for j in [0...board.size.x]
+			position = Vec2.make i, j
+			if not (board.get position)?
+				holes.push position
+
+	holes
+
+
+retry = (board) ->
+	recycleBin = []
+
+	holes = findHoles board
+	if holes.length == 0
+		return
+
+	holes.forEach (hole) ->
+		neighbors = (getNeighbors board, hole).filter (neighbor) -> (board.get neighbor)?
+		neighbors.forEach (neighbor) -> board.set neighbor, null
+		recycleBin.push neighbors...
+		return
+
+	bf board, recycleBin
+	return
+
+
 generate = (size, tileset) ->
 	board = Board.make size
 	board.set (Vec2.make 0, 0), tileset.get 't0-0'
-	bf board, Vec2.make 0, 0
+
+	bf board, [Vec2.make 0, 0]
+	for i in [0...3]
+		retry board
+
 	board
 
 
