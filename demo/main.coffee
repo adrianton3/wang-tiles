@@ -43,6 +43,6 @@ main = (src, srcSize, outSize) ->
 
 
 main(
-	'3.png'
-	Vec2.make 5, 8
+	'4.png'
+	Vec2.make 5, 11
 )
