@@ -40,7 +40,7 @@
     var candidates, k, len, neighbor, neighbors, position, queue, tries, triesMax;
     queue = slice.call(start);
     tries = 0;
-    triesMax = 1000;
+    triesMax = 10000;
     while (tries < triesMax && queue.length > 0) {
       tries++;
       position = queue.shift();
