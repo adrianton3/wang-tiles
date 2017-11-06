@@ -3,11 +3,13 @@
   'use strict';
   var draw, main;
 
-  draw = function(board, tileSize) {
+  draw = function(board, tileSize, scale) {
     var canvas, context, i, j, k, l, ref, ref1, tile;
     canvas = document.getElementById('can');
     canvas.width = tileSize.x * board.size.x;
     canvas.height = tileSize.y * board.size.y;
+    canvas.style.width = (canvas.width * scale) + "px";
+    canvas.style.height = (canvas.height * scale) + "px";
     context = canvas.getContext('2d');
     for (i = k = 0, ref = board.size.y; 0 <= ref ? k < ref : k > ref; i = 0 <= ref ? ++k : --k) {
       for (j = l = 0, ref1 = board.size.x; 0 <= ref1 ? l < ref1 : l > ref1; j = 0 <= ref1 ? ++l : --l) {
@@ -19,8 +21,9 @@
     }
   };
 
-  main = function(src, srcSize, outSize) {
-    var image;
+  main = function(src, srcSize, arg) {
+    var image, outSize, scale;
+    outSize = arg.outSize, scale = arg.scale;
     image = new Image;
     image.src = src;
     image.addEventListener('load', function() {
@@ -34,14 +37,20 @@
         var board, tileSize;
         tileSize = Object.assign({}, (tileset.get('t0-0')).tileData.size);
         if (outSize == null) {
-          outSize = Vec2.make(Math.floor(window.innerWidth / tileSize.x), Math.floor(window.innerHeight / tileSize.y));
+          outSize = Vec2.make(Math.floor(Math.floor(window.innerWidth / tileSize.x) / scale), Math.floor(Math.floor(window.innerHeight / tileSize.y) / scale));
         }
         board = Generator.generate(outSize, tileset);
-        draw(board, tileSize);
+        draw(board, tileSize, scale);
       });
     });
   };
 
-  main('4.png', Vec2.make(5, 11));
+  (function() {
+    var options;
+    options = {
+      scale: location.hash ? Number(location.hash.slice(1)) : 1
+    };
+    return main('4.png', Vec2.make(5, 11), options);
+  })();
 
 }).call(this);
