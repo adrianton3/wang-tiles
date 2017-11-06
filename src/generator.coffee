@@ -45,7 +45,7 @@ bf = (board, start) ->
 	queue = [start...]
 
 	tries = 0
-	triesMax = 1000
+	triesMax = 10000
 
 	while tries < triesMax and queue.length > 0
 		tries++
