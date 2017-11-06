@@ -1,10 +1,13 @@
 'use strict'
 
 
-draw = (board, tileSize) ->
+draw = (board, tileSize, scale) ->
 	canvas = document.getElementById 'can'
 	canvas.width = tileSize.x * board.size.x
 	canvas.height = tileSize.y * board.size.y
+
+	canvas.style.width = "#{canvas.width * scale}px"
+	canvas.style.height = "#{canvas.height * scale}px"
 
 	context = canvas.getContext '2d'
 
@@ -16,7 +19,7 @@ draw = (board, tileSize) ->
 	return
 
 
-main = (src, srcSize, outSize) ->
+main = (src, srcSize, { outSize, scale }) ->
 	image = new Image
 	image.src = src
 	image.addEventListener 'load', ->
@@ -31,18 +34,23 @@ main = (src, srcSize, outSize) ->
 			.then (tileset) ->
 				tileSize = Object.assign {}, (tileset.get 't0-0').tileData.size
 				outSize ?= Vec2.make(
-					window.innerWidth // tileSize.x
-					window.innerHeight // tileSize.y
+					window.innerWidth // tileSize.x // scale
+					window.innerHeight // tileSize.y // scale
 				)
 
 				board = Generator.generate outSize, tileset
-				draw board, tileSize
+				draw board, tileSize, scale
 				return
 
 	return
 
 
-main(
-	'4.png'
-	Vec2.make 5, 11
-)
+do ->
+	options =
+		scale: if location.hash then Number(location.hash.slice 1) else 1
+
+	main(
+		'4.png'
+		Vec2.make 5, 11
+		options
+	)
