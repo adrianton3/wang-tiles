@@ -34,8 +34,8 @@ main = (src, srcSize, { outSize, scale }) ->
 			.then (tileset) ->
 				tileSize = Object.assign {}, (tileset.get 't0-0').tileData.size
 				outSize ?= Vec2.make(
-					window.innerWidth // tileSize.x // scale
-					window.innerHeight // tileSize.y // scale
+					window.innerWidth // tileSize.x // scale + 1
+					window.innerHeight // tileSize.y // scale + 1
 				)
 
 				board = Generator.generate outSize, tileset
