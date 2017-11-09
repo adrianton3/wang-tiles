@@ -1,0 +1,4 @@
+.idea
+src/**/*.coffee
+demo/**/*.coffee
+tools
