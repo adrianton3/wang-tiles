@@ -37,7 +37,7 @@
         var board, tileSize;
         tileSize = Object.assign({}, (tileset.get('t0-0')).tileData.size);
         if (outSize == null) {
-          outSize = Vec2.make(Math.floor(Math.floor(window.innerWidth / tileSize.x) / scale), Math.floor(Math.floor(window.innerHeight / tileSize.y) / scale));
+          outSize = Vec2.make(Math.floor(Math.floor(window.innerWidth / tileSize.x) / scale) + 1, Math.floor(Math.floor(window.innerHeight / tileSize.y) / scale) + 1);
         }
         board = Generator.generate(outSize, tileset);
         draw(board, tileSize, scale);
