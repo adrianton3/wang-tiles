@@ -7,7 +7,7 @@
 } = Util
 
 
-getSignature = ({ tileData }) ->
+getSignature = (tileData) ->
 	zero = Vec2.make 0, 0
 
 	up = tileData.getStripe zero, (Vec2.make 1, 0), tileData.size.x
@@ -56,62 +56,93 @@ getNeighbors = (tilesBySignature, tile) ->
 	{ up, down, left, right }
 
 
-getRotations = (tileData, id, { rotations }) ->
-	if rotations
-		rotated180 = tileData.rotate180()
-		if rotated180.equals tileData
-			[{ id: "#{id}-90", tileData: tileData.rotate90() }]
-		else
-			[
-				{ id: "#{id}-90", tileData: tileData.rotate90() }
-				{ id: "#{id}-180", tileData: rotated180 }
-				{ id: "#{id}-270", tileData: tileData.rotate270() }
-			]
+getRotations = (tileData, { rotations }) ->
+	return {} unless rotations
+
+	rotated90 = tileData.rotate90()
+	if rotated90.equals tileData
+		return {}
+
+	rotated180 = tileData.rotate180()
+	if rotated180.equals tileData
+		return { 'r90': rotated90 }
+
+	{
+		'r90': rotated90
+		'r180': rotated180
+		'r270': tileData.rotate270()
+	}
+
+
+getFlipHorizontal = (tileData, { horizontal }) ->
+	return {} unless horizontal
+
+	flippedHorizontal = tileData.flipHorizontal()
+	if flippedHorizontal.equals tileData
+		{}
 	else
-		[]
+		{
+			'h': flippedHorizontal
+		}
 
 
-getFlipHorizontal = (tileData, id, { flip }) ->
-	if flip.horizontal
-		flippedHorizontal = tileData.flipHorizontal()
-		if flippedHorizontal.equals tileData
-			[]
-		else
-			[{ id: "#{id}-h", tileData: flippedHorizontal }]
+getFlipVertical = (tileData, { vertical }) ->
+	return {} unless vertical
+
+	flippedVertical = tileData.flipVertical()
+	if flippedVertical.equals tileData
+		{}
 	else
-		[]
+		{
+			'v': flippedVertical
+		}
 
 
-getFlipVertical = (tileData, id, { flip }) ->
-	if flip.vertical
-		flippedVertical = tileData.flipVertical()
-		if flippedVertical.equals tileData
-			[]
-		else
-			[{ id: "#{id}-v", tileData: flippedVertical }]
-	else
-		[]
+getFlips = (tileData, { flip }) ->
+	flips = Object.assign(
+		{}
+		getFlipHorizontal tileData, flip
+		getFlipVertical tileData, flip
+	)
 
-
-getFlips = (tileData, id, { flip }) ->
-	flips = [
-		(getFlipHorizontal tileData, id, { flip })...
-		(getFlipVertical tileData, id, { flip })...
-	]
-
-	if flips.length == 2 and flips[0].tileData.equals flips[1].tileData
-		[flips[0]]
+	if flips['h']? and flips['v']? and flips['h'].equals flips['v']
+		{
+			'h': flips['h']
+		}
 	else
 		flips
 
 
-getVariants = (tileData, id, { rotations, flip }) ->
-	# the flips and rotate-180 can lead to the same tile
-	[
-		{ id, tileData }
-		(getRotations tileData, id, { rotations })...
-		(getFlips tileData, id, { flip })...
-	]
+getVariants = (tileData, options) ->
+	rotations = getRotations tileData, options
+	flips = getFlips tileData, options
+
+	if options.rotations and options.flip.vertical and options.flip.horizontal
+		if rotations['r180']? and flips['h']? and flips['v']?
+			Object.assign(
+				{}
+				rotations
+				flips
+				{
+					'r90-h': rotations['r90'].flipHorizontal()
+					'r270-h': rotations['r270'].flipHorizontal()
+				}
+			)
+		else if rotations['r90']? and not rotations['r180']? and flips['h']? and flips['v']?
+			Object.assign(
+				{}
+				rotations
+				flips
+				{ 'r90-h': rotations['r90'].flipHorizontal() }
+			)
+		else # if not flips['h']? or not flips['v']?
+			rotations
+	else
+		Object.assign(
+			{}
+			rotations
+			flips
+		)
 
 
 getTiles = do ->
@@ -151,17 +182,26 @@ getTiles = do ->
 					1
 				)
 
-				id = "t#{i}-#{j}"
+				id = "t-#{i}-#{j}"
 
 				options = getOptions TileData.make optionsData, { x: cellSize.x, y: 1 }
 
-				variants = getVariants original, id, options
-				variants.forEach (variant) ->
-					signature = getSignature variant
-					Object.assign variant, options, { signature }
-					return
+				variants = getVariants original, options
 
-				tiles.push variants...
+				[
+					['id', original]
+					(Object.entries variants)...
+				].forEach ([ key, tileData ]) ->
+					signature = getSignature tileData
+					tiles.push Object.assign(
+						{
+							id: "#{id}-#{key}"
+							tileData
+							signature
+						}
+						options
+					)
+					return
 
 		tiles
 

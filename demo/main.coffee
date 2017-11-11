@@ -32,7 +32,7 @@ main = (src, srcSize, { outSize, scale }) ->
 
 		Tileset.getTileset canvas, srcSize
 			.then (tileset) ->
-				tileSize = Object.assign {}, (tileset.get 't0-0').tileData.size
+				tileSize = Object.assign {}, (tileset.get 't-0-0-id').tileData.size
 				outSize ?= Vec2.make(
 					window.innerWidth // tileSize.x // scale + 1
 					window.innerHeight // tileSize.y // scale + 1

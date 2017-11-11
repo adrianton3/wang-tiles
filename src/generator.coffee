@@ -59,6 +59,18 @@ bf = (board, start) ->
 
 	if tries >= triesMax
 		console.log 'bf gave up'
+		console.log queue
+
+	return
+
+
+simple = (board, start) ->
+	for i in [0...board.size.x]
+		for j in [0...board.size.y]
+			position = Vec2.make i, j
+			if not board.get position
+				candidates = findValidTiles board, position
+				board.set position, select candidates
 
 	return
 
@@ -94,11 +106,13 @@ retry = (board) ->
 
 generate = (size, tileset) ->
 	board = Board.make size
-	board.set (Vec2.make 0, 0), tileset.get 't0-0'
+	board.set (Vec2.make 1, 0), tileset.get 't-0-0-id'
 
-	bf board, [Vec2.make 0, 0]
-	for i in [0...3]
-		retry board
+#	bf board, [Vec2.make 0, 0]
+	simple board, [Vec2.make 0, 0]
+
+#	for i in [0...3]
+#		retry board
 
 	board
 
