@@ -8,5 +8,6 @@ canvas {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    image-rendering: -moz-crisp-edges;
     image-rendering: pixelated;
 }

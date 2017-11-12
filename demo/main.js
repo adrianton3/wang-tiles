@@ -35,7 +35,7 @@
       context.drawImage(image, 0, 0);
       return Tileset.getTileset(canvas, srcSize).then(function(tileset) {
         var board, tileSize;
-        tileSize = Object.assign({}, (tileset.get('t0-0')).tileData.size);
+        tileSize = Object.assign({}, (tileset.get('t-0-0-id')).tileData.size);
         if (outSize == null) {
           outSize = Vec2.make(Math.floor(Math.floor(window.innerWidth / tileSize.x) / scale) + 1, Math.floor(Math.floor(window.innerHeight / tileSize.y) / scale) + 1);
         }
@@ -48,9 +48,9 @@
   (function() {
     var options;
     options = {
-      scale: location.hash ? Number(location.hash.slice(1)) : 1
+      scale: location.hash ? Number(location.hash.slice(1)) : 2
     };
-    return main('4.png', Vec2.make(5, 11), options);
+    return main('5.png', Vec2.make(10, 10), options);
   })();
 
 }).call(this);

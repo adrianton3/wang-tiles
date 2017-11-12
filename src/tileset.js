@@ -6,9 +6,8 @@
 
   indexBy = Util.indexBy, groupBy = Util.groupBy;
 
-  getSignature = function(arg) {
-    var down, left, right, tileData, up, zero;
-    tileData = arg.tileData;
+  getSignature = function(tileData) {
+    var down, left, right, up, zero;
     zero = Vec2.make(0, 0);
     up = tileData.getStripe(zero, Vec2.make(1, 0), tileData.size.x);
     down = tileData.getStripe(zero.down(tileData.size.y - 1), Vec2.make(1, 0), tileData.size.x);
@@ -50,103 +49,94 @@
     };
   };
 
-  getRotations = function(tileData, id, arg) {
-    var rotated180, rotations;
+  getRotations = function(tileData, arg) {
+    var rotated180, rotated90, rotations;
     rotations = arg.rotations;
-    if (rotations) {
-      rotated180 = tileData.rotate180();
-      if (rotated180.equals(tileData)) {
-        return [
-          {
-            id: id + "-90",
-            tileData: tileData.rotate90()
-          }
-        ];
-      } else {
-        return [
-          {
-            id: id + "-90",
-            tileData: tileData.rotate90()
-          }, {
-            id: id + "-180",
-            tileData: rotated180
-          }, {
-            id: id + "-270",
-            tileData: tileData.rotate270()
-          }
-        ];
-      }
+    if (!rotations) {
+      return {};
+    }
+    rotated90 = tileData.rotate90();
+    if (rotated90.equals(tileData)) {
+      return {};
+    }
+    rotated180 = tileData.rotate180();
+    if (rotated180.equals(tileData)) {
+      return {
+        'r90': rotated90
+      };
+    }
+    return {
+      'r90': rotated90,
+      'r180': rotated180,
+      'r270': tileData.rotate270()
+    };
+  };
+
+  getFlipHorizontal = function(tileData, arg) {
+    var flippedHorizontal, horizontal;
+    horizontal = arg.horizontal;
+    if (!horizontal) {
+      return {};
+    }
+    flippedHorizontal = tileData.flipHorizontal();
+    if (flippedHorizontal.equals(tileData)) {
+      return {};
     } else {
-      return [];
+      return {
+        'h': flippedHorizontal
+      };
     }
   };
 
-  getFlipHorizontal = function(tileData, id, arg) {
-    var flip, flippedHorizontal;
-    flip = arg.flip;
-    if (flip.horizontal) {
-      flippedHorizontal = tileData.flipHorizontal();
-      if (flippedHorizontal.equals(tileData)) {
-        return [];
-      } else {
-        return [
-          {
-            id: id + "-h",
-            tileData: flippedHorizontal
-          }
-        ];
-      }
+  getFlipVertical = function(tileData, arg) {
+    var flippedVertical, vertical;
+    vertical = arg.vertical;
+    if (!vertical) {
+      return {};
+    }
+    flippedVertical = tileData.flipVertical();
+    if (flippedVertical.equals(tileData)) {
+      return {};
     } else {
-      return [];
+      return {
+        'v': flippedVertical
+      };
     }
   };
 
-  getFlipVertical = function(tileData, id, arg) {
-    var flip, flippedVertical;
-    flip = arg.flip;
-    if (flip.vertical) {
-      flippedVertical = tileData.flipVertical();
-      if (flippedVertical.equals(tileData)) {
-        return [];
-      } else {
-        return [
-          {
-            id: id + "-v",
-            tileData: flippedVertical
-          }
-        ];
-      }
-    } else {
-      return [];
-    }
-  };
-
-  getFlips = function(tileData, id, arg) {
+  getFlips = function(tileData, arg) {
     var flip, flips;
     flip = arg.flip;
-    flips = slice.call(getFlipHorizontal(tileData, id, {
-        flip: flip
-      })).concat(slice.call(getFlipVertical(tileData, id, {
-        flip: flip
-      })));
-    if (flips.length === 2 && flips[0].tileData.equals(flips[1].tileData)) {
-      return [flips[0]];
+    flips = Object.assign({}, getFlipHorizontal(tileData, flip), getFlipVertical(tileData, flip));
+    if ((flips['h'] != null) && (flips['v'] != null) && flips['h'].equals(flips['v'])) {
+      return {
+        'h': flips['h']
+      };
     } else {
       return flips;
     }
   };
 
-  getVariants = function(tileData, id, arg) {
-    var flip, rotations;
-    rotations = arg.rotations, flip = arg.flip;
-    return [{
-        id: id,
-        tileData: tileData
-      }].concat(slice.call(getRotations(tileData, id, {
-        rotations: rotations
-      })), slice.call(getFlips(tileData, id, {
-        flip: flip
-      })));
+  getVariants = function(tileData, options) {
+    var flips, rotations;
+    rotations = getRotations(tileData, options);
+    flips = getFlips(tileData, options);
+    if (options.rotations && options.flip.vertical && options.flip.horizontal) {
+      if ((rotations['r180'] != null) && (flips['h'] != null) && (flips['v'] != null)) {
+        return Object.assign({}, rotations, flips, {
+          'r90-h': rotations['r90'].flipHorizontal(),
+          'r270-h': rotations['r270'].flipHorizontal()
+        });
+      } else if ((rotations['r90'] != null) && (rotations['r180'] == null) && (flips['h'] != null) && (flips['v'] != null)) {
+        return Object.assign({}, rotations, flips, {
+          'r90-h': rotations['r90'].flipHorizontal()
+        });
+      } else {
+        return rotations;
+      }
+    } else {
+      return Object.assign({}, rotations, flips);
+    }
   };
 
   getTiles = (function() {
@@ -169,20 +159,22 @@
           tileData = context.getImageData(i * (cellSize.x + padding.x) + offset.x, j * (cellSize.y + padding.y) + offset.y, cellSize.x, cellSize.y).data;
           original = TileData.make(tileData, cellSize);
           optionsData = context.getImageData(i * (cellSize.x + padding.x) + offset.x, j * (cellSize.y + padding.y) + cellSize.y + offset.y * 2, cellSize.x, 1).data;
-          id = "t" + i + "-" + j;
+          id = "t-" + i + "-" + j;
           options = getOptions(TileData.make(optionsData, {
             x: cellSize.x,
             y: 1
           }));
-          variants = getVariants(original, id, options);
-          variants.forEach(function(variant) {
-            var signature;
-            signature = getSignature(variant);
-            Object.assign(variant, options, {
+          variants = getVariants(original, options);
+          [['id', original]].concat(slice.call((Object.entries(variants)))).forEach(function(arg) {
+            var key, signature, tileData;
+            key = arg[0], tileData = arg[1];
+            signature = getSignature(tileData);
+            tiles.push(Object.assign({
+              id: id + "-" + key,
+              tileData: tileData,
               signature: signature
-            });
+            }, options));
           });
-          tiles.push.apply(tiles, variants);
         }
       }
       return tiles;
