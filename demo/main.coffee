@@ -50,7 +50,7 @@ do ->
 		scale: if location.hash then Number(location.hash.slice 1) else 2
 
 	main(
-		'4.png'
-		Vec2.make 5, 11
+		'5.png'
+		Vec2.make 10, 10
 		options
 	)
