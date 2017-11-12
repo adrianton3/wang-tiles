@@ -47,7 +47,7 @@ main = (src, srcSize, { outSize, scale }) ->
 
 do ->
 	options =
-		scale: if location.hash then Number(location.hash.slice 1) else 1
+		scale: if location.hash then Number(location.hash.slice 1) else 2
 
 	main(
 		'4.png'
