@@ -30,17 +30,16 @@ main = (src, srcSize, { outSize, scale }) ->
 		context = canvas.getContext '2d'
 		context.drawImage image, 0, 0
 
-		Tileset.getTileset canvas, srcSize
-			.then (tileset) ->
-				tileSize = Object.assign {}, (tileset.get 't-0-0-id').tileData.size
-				outSize ?= Vec2.make(
-					window.innerWidth // tileSize.x // scale + 1
-					window.innerHeight // tileSize.y // scale + 1
-				)
+		tileset = Tileset.getTileset canvas, srcSize
+		tileSize = Object.assign {}, (tileset.get 't-0-0-id').tileData.size
+		outSize ?= Vec2.make(
+			window.innerWidth // tileSize.x // scale + 1
+			window.innerHeight // tileSize.y // scale + 1
+		)
 
-				board = Generator.generate outSize, tileset
-				draw board, tileSize, scale
-				return
+		board = Generator.generate outSize, tileset
+		draw board, tileSize, scale
+
 
 	return
 
