@@ -31,6 +31,13 @@ main = (src, srcSize, { outSize, scale }) ->
 		context.drawImage image, 0, 0
 
 		tileset = Tileset.getTileset canvas, srcSize
+
+		result = Validator.validate tileset
+		if result.valid
+			console.log 'tileset valid'
+		else
+			console.error "tileset invalid; no tile matches #{result.up.id} and #{result.down.id}"
+
 		tileSize = Object.assign {}, (tileset.get 't-0-0-id').tileData.size
 		outSize ?= Vec2.make(
 			window.innerWidth // tileSize.x // scale + 1
