@@ -31,23 +31,29 @@ main = (src, srcSize, { outSize, scale }) ->
 		context.drawImage image, 0, 0
 
 		tileset = Tileset.getTileset canvas, srcSize
+		tileSize = Object.assign {}, (tileset.get 't-0-0-id').tileData.size
 
 		result = Validator.validate tileset
 		if result.valid
 			console.log 'tileset valid'
+
+			outSize ?= Vec2.make(
+				window.innerWidth // tileSize.x // scale + 1
+				window.innerHeight // tileSize.y // scale + 1
+			)
+
+			board = Generator.generate outSize, tileset
+			draw board, tileSize, scale
 		else
 			console.error "tileset invalid; no tile matches #{result.up.id} and #{result.down.id}"
 
-		tileSize = Object.assign {}, (tileset.get 't-0-0-id').tileData.size
-		outSize ?= Vec2.make(
-			window.innerWidth // tileSize.x // scale + 1
-			window.innerHeight // tileSize.y // scale + 1
-		)
+			board = Board.make (Vec2.make 1, 2)
+			board.set (Vec2.make 0, 0), tileset.get result.up.id
+			board.set (Vec2.make 0, 1), tileset.get result.down.id
 
-		board = Generator.generate outSize, tileset
-		draw board, tileSize, scale
+			draw board, tileSize, scale
 
-
+		return
 	return
 
 
